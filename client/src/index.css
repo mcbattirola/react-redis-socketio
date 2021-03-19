@@ -1,0 +1,18 @@
+.App {
+    margin: 3rem;
+}
+
+.title {
+    font-size: 3rem;
+}
+
+.articles-list {
+    font-size: 2rem;
+    list-style: none;
+    padding-left: 0;
+}
+
+.article:hover {
+    margin: 0;
+    cursor: pointer;
+}
