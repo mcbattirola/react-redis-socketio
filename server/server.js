@@ -19,21 +19,26 @@ app.get('/', (req, res) => {
 });
  
 io.on('connection', socket => {
-   interval = setInterval(() => getApiAndEmit(socket), 1000);
-
-   emmitOpenArticles(socket);
+   emitOpenArticles(socket);
 
    console.log('server side - socket connected!');
 
-   socket.on("editArticle", (data) => {
-      console.log(data)
-      openArticles.push(data)
-      emmitOpenArticles(socket);
+   socket.on("lockArticle", (data) => {
+      console.log("lock", data, socket.id)
+      lockArticle(data, socket);
+      emitOpenArticles(io);
+   })
+
+   socket.on("unlockArticle", id => {
+      console.log("unlock ", id, socket.id)
+      openArticles = openArticles.filter(a => a.article !== id)
+      emitOpenArticles(io);
    })
    
-   socket.on("disconnect", () => {
+   socket.on("disconnect", socket => {
       console.log("Client disconnected");
-      clearInterval(interval);
+      unlockSocketArticles(socket);
+      emitOpenArticles(io);
    });
 
 });
@@ -48,15 +53,18 @@ http.listen(port, () => {
 });
 
 
-// socket methods
-const getApiAndEmit = socket => {
-   const response = new Date();
-   // Emitting a new message. Will be consumed by the client
-   socket.emit("FromAPI", response);
-};
-
-const emmitOpenArticles = socket => {
+const emitOpenArticles = socket => {
    socket.emit("openArticles", openArticles)
 }
 
-const openArticles = [1, 9];
+const lockArticle = (id, socket) => {
+   if (!openArticles.find(a => a.article === id)) {
+      openArticles.push({article: id, user: socket.id})
+   }
+}
+
+const unlockSocketArticles = socket => {
+   openArticles = openArticles.filter(a => a.user === socket.id)
+}
+
+let openArticles = [];
