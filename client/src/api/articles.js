@@ -1,17 +1,22 @@
+const HOST = process.env.REACT_APP_API_HOST || "http://localhost"
+const PORT = process.env.REACT_APP_API_PORT || 3000
+
+const API_PATH = `${HOST}:${PORT}`
+
 const getArticles = async () => {
-    const data = await fetch("http://localhost:3000/api/v1/article")
+    const data = await fetch(`${API_PATH}/api/v1/article`)
     const dataJson = await data.json()
     return dataJson
 }
 
 const getArticleById = async (id) => {
-    let data = await fetch(`http://localhost:3000/api/v1/article/${id}`)
+    let data = await fetch(`${API_PATH}/api/v1/article/${id}`)
     const dataJson = await data.json()
     return dataJson && dataJson.length > 0 ? dataJson[0] : null;
 }
 
 const updateArticle = async (id, data) => {
-    return await fetch(`http://localhost:3000/api/v1/article/${id}`, {
+    return await fetch(`${API_PATH}/api/v1/article/${id}`, {
         method: 'PUT',
         mode: 'cors', // no-cors, *cors, same-origin
         cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached

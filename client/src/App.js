@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 
+import { BiArrowBack } from "react-icons/bi";
+
+
 import {
   BrowserRouter as Router,
   Switch,
@@ -12,43 +15,41 @@ import ListArticles from './pages/listArticles';
 import EditArticle from './pages/editArticle';
 
 function App() {
-  const [response, setResponse] = useState("");
+  const [openArticles, setOpenArticles] = useState([]);
   let socket = useRef();
-
+    
   useEffect(() => {
     socket.current = io("http://localhost:3000");
     socket.current.on("openArticles", data => {
-      setResponse(data);
+        console.log("update open articles with ", data)
+        setOpenArticles(data);
     });
 
-    socket.current.emit('editArticle', 4);
+    return () => {
+      socket.current.disconnect();
+    }
+
   }, []);
-
-  const emmitEditArticle = ()  => {
-    socket.current.emit('editArticle', 5);
-  }
-
 
   return (
     <Router>
       <div className="App">
-        <header>
-          <Link to="/">Back</Link>
+        <header className="header">
+          <Link to="/" className="header-back">
+            <BiArrowBack size={16} style={{marginRight: "4px"}}/>
+             Back
+          </Link>
         </header>
         <Switch>
           <Route path="/article/:id">
-            <EditArticle />
+            <EditArticle socket={socket} openArticles={openArticles} />
           </Route>
           <Route path="/">
-            <ListArticles />
+            <ListArticles socket={socket} openArticles={openArticles} />
           </Route>
         </Switch>
       </div>
       <div>
-        Open articles: {response}
-      </div>
-      <div>
-        <button onClick={emmitEditArticle}>aqui</button>
       </div>
 
     </Router>

@@ -9,7 +9,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "ioredis": "^4.24.2",
+    "ioredis": "^4.24.3",
     "knex": "^0.95.2",
     "pg": "^8.5.1",
     "socket.io": "^4.0.0"
