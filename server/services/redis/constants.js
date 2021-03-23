@@ -1,3 +1,3 @@
 module.exports = {
-    LOCK_CHANNEL: "lock"
+  LOCK_CHANNEL: 'lock'
 }
