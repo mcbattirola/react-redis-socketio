@@ -4,7 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "lint" : "standard --fix"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -12,7 +13,8 @@
     "ioredis": "^4.24.3",
     "knex": "^0.95.2",
     "pg": "^8.5.1",
-    "socket.io": "^4.0.0"
+    "socket.io": "^4.0.0",
+    "standard": "^16.0.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.7"
