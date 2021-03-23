@@ -19,9 +19,12 @@ const subscribeToLocked = (callback, errCallback) => {
   });
     
   // we have to listen to pmessage, if we used psubscribe to match a pattern
-  redis.on("message", (channel, message, ...rest) => {
-    console.log("[redis subscriber] - channel:", channel, "----- message:", message, ...rest)
-    // callback(channel, message)
+  redis.on("message", (channel, message) => {
+    console.log("[redis subscriber] - channel:", channel, "----- message:", message,)
+    if (message === 'set') {
+      console.log("ouviu um set")
+      callback()
+    }
   });
 }
 
