@@ -1,12 +1,10 @@
-const publishLock = require("../redis/publisher")
+const publishLock = require("../redis/repo")
 const subscribeToLocked = require("../redis/subscriber")
 
 const setupSocket = io => {
-  let openArticles = [];
 
   subscribeToLocked((_, data) => {
-    openArticles = JSON.parse(data)
-    emitOpenArticles(io);
+    emitOpenArticles(io, data);
   })
 
   io.on('connection', socket => {
@@ -27,14 +25,15 @@ const setupSocket = io => {
   });
   
   
-  const emitOpenArticles = socket => {    
-    const data = openArticles || []
-    socket.emit("openArticles", data)
+  const emitOpenArticles = (socket, data) => {    
+    socket.emit("openArticles", data || [])
 
-    console.log("Emmiting articles: ", data)
+    console.log("Emmiting articles: ", data || [])
   }
   
   const lockArticle = (id, socket) => {
+    // get open articles from redis
+    const openArticles = []  
     if (!openArticles.find(a => a.article === id)) {
       const newOpenArticles = [...openArticles, {article: id, user: socket.id}]
       publishLock(newOpenArticles)
@@ -42,11 +41,15 @@ const setupSocket = io => {
   }
 
   const unlockArticle = (id, socket) => {
+    // get open articles from redis
+    const openArticles = []
     const newOpenArticles = openArticles.filter(a => a.article !== id);
     publishLock(newOpenArticles);
   }
   
   const unlockSocketArticles = socket => {
+    // get open articles from redis
+    const openArticles = []
     const newOpenArticles = openArticles.filter(a => a.user === socket.id)
     publishLock(newOpenArticles);
   }
