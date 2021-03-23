@@ -1,12 +1,11 @@
-const publishLock = require("../redis/publisher")
+const {publishLock, getLocked} = require("../redis/repo")
 const subscribeToLocked = require("../redis/subscriber")
 
 const setupSocket = io => {
-  let openArticles = [];
 
-  subscribeToLocked((_, data) => {
-    openArticles = JSON.parse(data)
-    emitOpenArticles(io);
+  subscribeToLocked(async () => {
+    const openArticles = await getLocked()
+    emitOpenArticles(io, openArticles);
   })
 
   io.on('connection', socket => {
@@ -27,26 +26,29 @@ const setupSocket = io => {
   });
   
   
-  const emitOpenArticles = socket => {    
-    const data = openArticles || []
-    socket.emit("openArticles", data)
-
-    console.log("Emmiting articles: ", data)
+  const emitOpenArticles = (socket, data) => {    
+    socket.emit("openArticles", data || [])
   }
   
-  const lockArticle = (id, socket) => {
+  const lockArticle = async (id, socket) => {
+    // open transaction / lock redis ?
+    const openArticles = await getLocked()
     if (!openArticles.find(a => a.article === id)) {
       const newOpenArticles = [...openArticles, {article: id, user: socket.id}]
       publishLock(newOpenArticles)
-   }
+    }
   }
 
-  const unlockArticle = (id, socket) => {
+  const unlockArticle = async (id, socket) => {
+    // open transaction / lock redis ?
+    const openArticles = await getLocked()
     const newOpenArticles = openArticles.filter(a => a.article !== id);
     publishLock(newOpenArticles);
   }
   
-  const unlockSocketArticles = socket => {
+  const unlockSocketArticles = async socket => {
+    // open transaction / lock redis ?
+    const openArticles = await getLocked()
     const newOpenArticles = openArticles.filter(a => a.user === socket.id)
     publishLock(newOpenArticles);
   }
