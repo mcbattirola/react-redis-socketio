@@ -50,7 +50,6 @@ const getUserArticles = async (id) => {
 }
 
 const setUserArticles = (userId, data) => {
-  console.log("setUserArticles", userId, data)
   redis.set(`user:${userId}`, JSON.stringify(data));
 }
 
@@ -58,4 +57,13 @@ const deleteUserArticles = userId => {
   redis.del(`user:${userId}`);
 }
 
-module.exports = { publishLock, getLocked, addLockedArticleData, removeLockedArticleData, getUserArticles, setUserArticles, deleteUserArticles }
+const getArticleData = async (id) => {
+  // console.log('[redis event] - get locked article data:', id)
+  try {
+    return await redis.get(`article:${id}`)
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+module.exports = { publishLock, getLocked, addLockedArticleData, removeLockedArticleData, getUserArticles, setUserArticles, deleteUserArticles, getArticleData }

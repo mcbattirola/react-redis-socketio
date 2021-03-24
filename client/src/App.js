@@ -15,19 +15,33 @@ import EditArticle from './pages/editArticle'
 
 function App () {
   const [openArticles, setOpenArticles] = useState([])
-  const socket = useRef()
+  const [openArticleDetails, setOpenArticleDetails] = useState()
+  const [socket, setSocket] = useState()
 
   useEffect(() => {
-    socket.current = io('http://localhost:3000')
-    socket.current.on('openArticles', data => {
+    setSocket(io('http://localhost:3000'))
+    
+    return () => {
+      socket.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!socket) 
+      return
+
+    socket.on('openArticles', data => {
       console.log('update open articles with ', data)
       setOpenArticles(data)
     })
 
-    return () => {
-      socket.current.disconnect()
-    }
-  }, [])
+    socket.on('message', data => {
+      const details = JSON.parse(data);
+      console.log("got message: ", details)
+      setOpenArticleDetails(details)
+    })
+
+  }, socket)
 
   return (
     <Router>
@@ -37,10 +51,13 @@ function App () {
             <BiArrowBack size={16} style={{ marginRight: '4px' }} />
             Back
           </Link>
+          <div>
+            User: {socket?.id}
+          </div>
         </header>
         <Switch>
           <Route path='/article/:id'>
-            <EditArticle socket={socket} openArticles={openArticles} />
+            <EditArticle socket={socket} articleDetails={openArticleDetails}/>
           </Route>
           <Route path='/'>
             <ListArticles socket={socket} openArticles={openArticles} />

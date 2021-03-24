@@ -4,7 +4,7 @@ import { getArticleById, updateArticle } from '../api/articles'
 import PageTitle from '../components/pageTitle'
 import { CgDanger } from 'react-icons/cg'
 
-function EditArticle ({ socket, openArticles }) {
+function EditArticle ({ socket, articleDetails }) {
   const { id } = useParams()
 
   const [article, setArticle] = useState({ name: '', content: '' })
@@ -14,28 +14,22 @@ function EditArticle ({ socket, openArticles }) {
       setArticle(article)
     })
 
-    console.log('emmit lock on', id)
-    socket.current?.emit('lockArticle', id)
-
-    socket.current?.on(`article:${id}`, data => {
-      console.log(`on article:${id} got data: ${data}`)
-    })
+    socket?.emit('lockArticle', id)
 
     return () => {
-      console.log('edit article cleanup on', id)
-      socket.current.emit('unlockArticle', id)
+      socket?.emit('unlockArticle', id)
     }
-  }, [id])
+  }, [id, socket])
 
   const [isLocked, setIsLocked] = useState(false)
   useEffect(() => {
-    const openInstance = openArticles?.find(a => a.article === id)
-    if (!openInstance) {
-      socket.current?.emit('lockArticle', id)
+    console.log("articleDetails", articleDetails)
+    if (!articleDetails) {
+      socket?.emit('lockArticle', id)
     } else {
-      setIsLocked(openInstance && openInstance.user !== socket.current?.id)
+      setIsLocked(articleDetails && articleDetails.user !== socket.id)
     }
-  }, [id, openArticles])
+  }, [id, articleDetails, socket])
 
   const handleChange = (event, field) => {
     setArticle({

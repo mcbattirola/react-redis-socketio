@@ -1,4 +1,4 @@
-const { publishLock, getLocked, addLockedArticleData, removeLockedArticleData, getUserArticles, setUserArticles, deleteUserArticles } = require('../redis/repo')
+const { publishLock, getLocked, addLockedArticleData, removeLockedArticleData, getUserArticles, setUserArticles, deleteUserArticles, getArticleData } = require('../redis/repo')
 const listenKey = require('../redis/subscriber')
 
 const setupSocket = io => {
@@ -7,12 +7,34 @@ const setupSocket = io => {
     emitOpenArticles(io, openArticles)
   })
 
+  // we use this array to make sure we dont subscribe twice to the same key
+  let listenedKeys = [];
+
   io.on('connection', socket => {
     emitOpenArticles(socket)
+    console.log("---- new user: ",socket.id)
 
-    socket.on('lockArticle', (data) => {
+    socket.on('lockArticle', async (data) => {
       console.log("[socket] - lock", data, socket.id)
-      lockArticle(data, socket.id)
+      // subscribe socket to room `article:id`
+      socket.join(`article:${data}`)
+
+      // and subscribe ourselves to its article key on redis
+      if (!listenedKeys.includes(data)) {
+        listenKey(`article:${data}`, async () => {
+          // when data changes, emit to client
+          const articleData = await getArticleData(data);
+          io.to(`article:${data}`).emit('message', articleData);
+          console.log("emmit to article ", data, 'subscribers', articleData)
+        })
+        listenedKeys.push(data);
+      }
+
+      // then, lock the article
+      await lockArticle(data, socket.id)
+      // and emmit details to socket
+      const articleData = await getArticleData(data);
+      socket.emit('message', articleData);
     })
 
     socket.on('unlockArticle', id => {
@@ -49,7 +71,6 @@ const setupSocket = io => {
       const userArticles = await getUserArticles(userId)
       userArticles.push(id)
       
-      console.log("lockArticle, user id: ", userId)
       setUserArticles(userId, userArticles)
     }
   }
@@ -63,12 +84,10 @@ const setupSocket = io => {
 
     const userArticles = await getUserArticles(userId)
 
-    console.log("unlockArticle, user id: ", userId)
     setUserArticles(userId, userArticles.filter(a => a !== id))
   }
 
   const unlockSocketArticles = async userId => {
-    console.log("unlockSocketArticles, userId: ", userId)
     if (!userId) {
       return;
     }
