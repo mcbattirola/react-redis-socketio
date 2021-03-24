@@ -17,13 +17,45 @@ const publishLock = data => {
   }
 }
 
-const getLocked = async () => {
+const addLockedArticleData = data => {
+  const strData = JSON.stringify(data || {})
+  console.log('[redis event] - publish locked article ', strData)
   try {
-    const data = await redis.get(LOCK_CHANNEL)
-    return JSON.parse(data)
+    redis.set(`article:${data.id}`, strData)
   } catch (err) {
     console.log(err)
   }
 }
 
-module.exports = { publishLock, getLocked }
+const removeLockedArticleData = id => {
+  try {
+    redis.del(`article:${id}`)
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+const getLocked = async () => {
+  try {
+    const data = await redis.get(LOCK_CHANNEL)
+    return data ? JSON.parse(data) : []
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+const getUserArticles = async (id) => {
+  const data = await redis.get(`user:${id}`)
+  return data ? JSON.parse(data) : []
+}
+
+const setUserArticles = (userId, data) => {
+  console.log("setUserArticles", userId, data)
+  redis.set(`user:${userId}`, JSON.stringify(data));
+}
+
+const deleteUserArticles = userId => {
+  redis.del(`user:${userId}`);
+}
+
+module.exports = { publishLock, getLocked, addLockedArticleData, removeLockedArticleData, getUserArticles, setUserArticles, deleteUserArticles }

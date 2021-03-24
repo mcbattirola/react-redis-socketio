@@ -15,14 +15,13 @@ function ListArticles ({ openArticles }) {
   }, [])
 
   return (
-    <> {console.log('openArticles: ', openArticles)}
+    <>
       <PageTitle title='Articles' />
 
       <ul className='articles-list'>
         {
           articles?.map(article => {
-            const openInstance = openArticles.find(a => parseInt(a.article) === article.id)
-            console.log('artigo ', article.id, ' is open? ', openInstance)
+            const openInstance = openArticles.find(a => parseInt(a) === article.id)
             return (
               <li className='article' key={article.id}>
                 <Link to={`/article/${article.id}`}>{article.name}</Link> {openInstance ? <AiFillLock size={16} /> : ''}

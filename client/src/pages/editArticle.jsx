@@ -17,6 +17,10 @@ function EditArticle ({ socket, openArticles }) {
     console.log('emmit lock on', id)
     socket.current?.emit('lockArticle', id)
 
+    socket.current?.on(`article:${id}`, data => {
+      console.log(`on article:${id} got data: ${data}`)
+    })
+
     return () => {
       console.log('edit article cleanup on', id)
       socket.current.emit('unlockArticle', id)

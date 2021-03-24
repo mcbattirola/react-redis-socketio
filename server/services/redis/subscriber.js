@@ -3,8 +3,8 @@ const redis = new Redis()
 
 const LOCK_CHANNEL = require('./constants').LOCK_CHANNEL
 
-const subscribeToLocked = (callback, errCallback) => {
-  redis.subscribe('__keyspace@0__:' + LOCK_CHANNEL, err => {
+const listenKey = (key, callback, errCallback) => {
+  redis.subscribe('__keyspace@0__:' + key, err => {
     if (err) {
       console.error('Failed to subscribe: %s', err.message)
       if (errCallback) {
@@ -22,4 +22,4 @@ const subscribeToLocked = (callback, errCallback) => {
   })
 }
 
-module.exports = subscribeToLocked
+module.exports = listenKey
