@@ -1,8 +1,6 @@
 const Redis = require('ioredis')
 const redis = new Redis()
 
-const LOCK_CHANNEL = require('./constants').LOCK_CHANNEL
-
 const listenKey = (key, callback, errCallback) => {
   redis.subscribe('__keyspace@0__:' + key, err => {
     if (err) {

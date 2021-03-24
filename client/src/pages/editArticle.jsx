@@ -23,7 +23,7 @@ function EditArticle ({ socket, articleDetails }) {
 
   const [isLocked, setIsLocked] = useState(false)
   useEffect(() => {
-    console.log("articleDetails", articleDetails)
+    console.log('articleDetails', articleDetails)
     if (!articleDetails) {
       socket?.emit('lockArticle', id)
     } else {
@@ -47,7 +47,7 @@ function EditArticle ({ socket, articleDetails }) {
     <form onSubmit={handleSubmit} className='form-edit'>
       <PageTitle title={article.name} />
 
-      {isLocked ? <div className='edit-locked'> <CgDanger size={20} className='edit-locked-icon' /> Este arquivo já está sendo editado </div> : ''}
+      {isLocked ? <div className='edit-locked'> <CgDanger size={20} className='edit-locked-icon' /> Este arquivo já está sendo editado pelo usuario {articleDetails?.user} </div> : ''}
 
       <div>
         <label htmlFor='article-title'>Titulo</label>

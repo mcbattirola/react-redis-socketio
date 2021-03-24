@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import io from 'socket.io-client'
 
 import { BiArrowBack } from 'react-icons/bi'
@@ -20,15 +20,14 @@ function App () {
 
   useEffect(() => {
     setSocket(io('http://localhost:3000'))
-    
+
     return () => {
       socket.disconnect()
     }
   }, [])
 
   useEffect(() => {
-    if (!socket) 
-      return
+    if (!socket) { return }
 
     socket.on('openArticles', data => {
       console.log('update open articles with ', data)
@@ -36,11 +35,10 @@ function App () {
     })
 
     socket.on('message', data => {
-      const details = JSON.parse(data);
-      console.log("got message: ", details)
+      const details = JSON.parse(data)
+      console.log('got message: ', details)
       setOpenArticleDetails(details)
     })
-
   }, socket)
 
   return (
@@ -57,7 +55,7 @@ function App () {
         </header>
         <Switch>
           <Route path='/article/:id'>
-            <EditArticle socket={socket} articleDetails={openArticleDetails}/>
+            <EditArticle socket={socket} articleDetails={openArticleDetails} />
           </Route>
           <Route path='/'>
             <ListArticles socket={socket} openArticles={openArticles} />

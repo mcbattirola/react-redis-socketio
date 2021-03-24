@@ -2,20 +2,20 @@ const { publishLock, getLocked, addLockedArticleData, removeLockedArticleData, g
 const listenKey = require('../redis/subscriber')
 
 const setupSocket = io => {
-  listenKey("lock", async () => {
+  listenKey('lock', async () => {
     const openArticles = await getLocked()
     emitOpenArticles(io, openArticles)
   })
 
   // we use this array to make sure we dont subscribe twice to the same key
-  let listenedKeys = [];
+  const listenedKeys = []
 
   io.on('connection', socket => {
     emitOpenArticles(socket)
-    console.log("---- new user: ",socket.id)
+    console.log('---- new user: ', socket.id)
 
     socket.on('lockArticle', async (data) => {
-      console.log("[socket] - lock", data, socket.id)
+      console.log('[socket] - lock', data, socket.id)
       // subscribe socket to room `article:id`
       socket.join(`article:${data}`)
 
@@ -23,27 +23,27 @@ const setupSocket = io => {
       if (!listenedKeys.includes(data)) {
         listenKey(`article:${data}`, async () => {
           // when data changes, emit to client
-          const articleData = await getArticleData(data);
-          io.to(`article:${data}`).emit('message', articleData);
-          console.log("emmit to article ", data, 'subscribers', articleData)
+          const articleData = await getArticleData(data)
+          io.to(`article:${data}`).emit('message', articleData)
+          console.log('emmit to article ', data, 'subscribers', articleData)
         })
-        listenedKeys.push(data);
+        listenedKeys.push(data)
       }
 
       // then, lock the article
       await lockArticle(data, socket.id)
       // and emmit details to socket
-      const articleData = await getArticleData(data);
-      socket.emit('message', articleData);
+      const articleData = await getArticleData(data)
+      socket.emit('message', articleData)
     })
 
     socket.on('unlockArticle', id => {
-      console.log("[socket] - unlock")
+      console.log('[socket] - unlock')
       unlockArticle(id, socket.id)
     })
 
     socket.on('disconnect', () => {
-      console.log("[socket] - disconnect", socket.id)
+      console.log('[socket] - disconnect', socket.id)
       unlockSocketArticles(socket.id)
     })
   })
@@ -65,12 +65,12 @@ const setupSocket = io => {
       publishLock(newOpenArticles)
 
       // create a key article:articleId
-      addLockedArticleData({id, user: userId})
+      addLockedArticleData({ id, user: userId })
 
       // add lock to user:userId
       const userArticles = await getUserArticles(userId)
       userArticles.push(id)
-      
+
       setUserArticles(userId, userArticles)
     }
   }
@@ -89,7 +89,7 @@ const setupSocket = io => {
 
   const unlockSocketArticles = async userId => {
     if (!userId) {
-      return;
+      return
     }
 
     // open transaction / lock redis ?
@@ -99,14 +99,12 @@ const setupSocket = io => {
     const openArticles = await getLocked()
 
     userArticles.map(article => removeLockedArticleData(article))
-    
 
     if (openArticles && userArticles) {
       publishLock(openArticles.filter(a => !userArticles.includes(a)))
     }
 
-    
-    deleteUserArticles(userId, null);
+    deleteUserArticles(userId, null)
   }
 }
 

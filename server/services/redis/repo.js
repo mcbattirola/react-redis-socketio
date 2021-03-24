@@ -50,11 +50,11 @@ const getUserArticles = async (id) => {
 }
 
 const setUserArticles = (userId, data) => {
-  redis.set(`user:${userId}`, JSON.stringify(data));
+  redis.set(`user:${userId}`, JSON.stringify(data))
 }
 
 const deleteUserArticles = userId => {
-  redis.del(`user:${userId}`);
+  redis.del(`user:${userId}`)
 }
 
 const getArticleData = async (id) => {
